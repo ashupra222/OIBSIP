@@ -55,3 +55,6 @@ def profile(request):
 def logoutPage(request):
     logout(request)
     return redirect("login")
+
+def default(request):
+    return redirect("register")

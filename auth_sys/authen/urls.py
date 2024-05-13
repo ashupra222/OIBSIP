@@ -16,10 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path , include
-from core.views import profile
+from core.views import profile, default
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('core.urls')),
     path('profile/', profile, name="profile"),
+    path('', default, name="default"),
+
 ]
