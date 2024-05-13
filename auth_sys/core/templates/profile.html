@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        
+        .container {
+            margin: 10px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #title {
+            height: fit-content;
+            width: auto;
+            margin: 1px;
+            background-color: #ececec;
+            padding: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        
+        input[type="submit"] {
+            width: 25%;
+            float: right;
+            padding: 10px;
+            margin-right: 50%;
+            margin-top: 4%;
+            background-color: #4CAF50;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            visibility: hidden;
+        }
+        
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        #head{
+            text-align: center; 
+            left: 35%;
+            position: absolute;
+        }
+        #username{
+            text-align: right; 
+            padding-right: 5px; 
+            padding-bottom: 10px;
+            padding-top: 10px;
+        }
+        .card {
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            margin-top: 10px;
+            background-color: #fff;
+            border-radius: 18px;
+            box-shadow: 1px 1px 3px 0 grey;
+            height: 200px;
+            margin-bottom: 20px;
+            padding: 20px 10px 20px 50px;
+        }
+        .card table {
+            font-size: 16px;
+            height: 80px;
+            width: 50%;
+        }
+        input[type="button"]{
+            width: 100px;
+            height: 50px;
+            position: absolute;
+            margin-top: 10px;
+            background-color: #24a0ed;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color .5s;
+        }
+        input[type="button"]:hover {
+            background-color: #0086d0;
+        }
+        
+        .editable {
+            border-radius: 2px;
+            background-color: rgb(241, 239, 239);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="title">
+            <input id="profile_btn" type="button" value="Edit Profile" onclick=makeEditable();>
+            <h1 id="head">Profile</h1>
+            <a href="{% url 'logout' %}" style="float: right;">Logout</a>
+            <p id="username">Username: {{ request.user.username }}</p>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td style="width: 50%; align-items: left;">First Name</td>
+                            <td style="width: 5%;">:</td>
+                            <td class="editable" id="fname">{{ request.user.first_name }}</td>
+                        </tr>
+                        <tr>
+                            <td>Last Name</td>
+                            <td>:</td>
+                            <td class="editable" id="lname">{{ request.user.last_name }}</td>
+                        </tr>
+                        <tr>
+                            <td>Email</td>
+                            <td>:</td>
+                            <td class="editable" id="email">{{ request.user.email }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <form action="" method="post">
+                {% csrf_token %}
+              <input type="hidden" name="username" value="{{ request.user.username }}">
+              <input type="hidden" name="first_name" value="" id="in_fname">
+              <input type="hidden" name="last_name" value="" id="in_lname">
+              <input type="hidden" name="email" value="" id="in_email">
+              <input type="submit" value="Update Profile" onclick=setValue(); id="btn">
+            </form>
+        </div>
+    </div>
+</body>
+<script>
+    let flag = false;
+    function makeEditable(){
+        let btn = document.getElementById("profile_btn");
+        if(flag){
+            btn.style.backgroundColor = "#24a0ed";
+            flag = false;
+        }
+        else {
+            btn.style.backgroundColor = "#c1c7cb";
+            flag = true;
+        }
+        
+        
+        let elements = document.getElementsByClassName("editable");
+        for(let i=0; i<elements.length; i++ ){
+            if(!flag){
+                elements[i].contentEditable = "false";
+                elements[i].style.backgroundColor = "rgb(241, 239, 239)";
+            }
+            else {
+                elements[i].contentEditable = "true";
+                elements[i].style.backgroundColor = "lightgrey";
+            }
+        }
+        action();
+    }
+    function setValue(){
+        let fname = document.getElementById("fname").innerText;
+        let lname = document.getElementById("lname").innerText;
+        let email = document.getElementById("email").innerText;
+        document.getElementById('in_fname').value = fname;
+        document.getElementById('in_lname').value = lname;
+        document.getElementById('in_email').value = email;
+        alert("By clicking ok profile will be updated");
+    }
+    function action() {
+        let hidden = document.getElementById('btn').style.visibility;
+        if(hidden === 'visible') {
+            document.getElementById('btn').style.visibility = 'hidden';
+        } else {
+            document.getElementById('btn').style.visibility = 'visible';
+        }
+    }
+</script>
+</html>
