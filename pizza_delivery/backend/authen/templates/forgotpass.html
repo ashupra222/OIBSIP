@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Forgot Password Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            display: inline;
+        }
+
+        input[type="number"] {
+            padding: 6px;
+            width: 45%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+        
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        #otpdiv{
+            margin-bottom: 10px;
+        }
+
+        #sendotp {
+            color: blue; 
+            cursor: pointer;
+            display: inline;
+            margin-left: 35%;
+        }
+
+        #text{
+            color: rgb(68, 56, 129);
+            line-height: 2;
+            transition: font-size .3s;
+        }
+        #text:hover{
+            color: blue;
+            font-size: large;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Forgot Password</h2>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <input type="text" id="uname_email" name="uname_email" placeholder="Username or Email">
+            <div id="otpdiv">
+                <input type="number" name="otp" placeholder="Enter OTP" id="otp" oninput="if(this.value>999999){this.value = this.value.slice(0, 6);}else if(this.value<0){this.value='0';}passCheck();">
+                <p id="sendotp" onclick="sendOTP();"><u>send otp</u></p>
+            </div>
+            <input id="submit" type="submit" value="Validate OTP">
+            <a href="{% url 'register' %}" id="text">Not Registered?</a>
+            <a href="{% url 'login' %}" id="text" style="float: right;">Login</a>
+        </form>
+    </div>
+</body>
+<script>
+    const subBtn = document.getElementById("submit");
+    let flag = false;
+    passCheck();
+
+    function passCheck(){
+        let otp = document.getElementById("otp").value;
+        if( otp && flag){
+            subBtn.disabled = false;
+            subBtn.style.backgroundColor = "#4CAF50";
+        }
+        else {
+            subBtn.disabled = true;
+            subBtn.style.backgroundColor = "grey";
+        }
+        
+    }
+
+    function sendOTP(){
+        flag = true;
+        let csrf = document.cookie.split("=")[1];
+        let email = document.getElementById("uname_email").value;
+        let sendOtpText = document.getElementById("sendotp");
+        sendOtpText.innerHTML = "<u>sending...</u>";
+
+        let x = fetch('otp-gen/', {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrf,
+            },
+            body: JSON.stringify({
+                "uname_email": email,
+            }),
+        });
+        let data =  x.then(r => r.json()).then(u => {return u;});
+        const returnData = async () => {
+            let d = await data;
+            alert(d);
+            sendOtpText.innerHTML = "<u>Resend</u>";
+        }
+        passCheck();
+        returnData();
+    }
+</script>
+</html>

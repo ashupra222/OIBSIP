@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1em;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #444;
+            color: white;
+            padding: 0.5em;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 1em;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+
+        main {
+            padding: 1em;
+        }
+
+        #pizza-variety,
+        #custom-pizza {
+            margin-bottom: 3em;
+        }
+
+        .pizza-list {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 1em;
+        }
+
+        .pizza-item {
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 1em;
+            border-radius: 5px;
+            flex: 0 0 calc(33.333% - 8em);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #custom-pizza-form {
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 1em;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #custom-pizza-result {
+            margin-top: 1em;
+            background-color: #fff;
+            padding: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Pizza Dashboard</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="">Dashboard</a></li>
+            {% if user.is_anonymous %}
+            <li><a href="{% url 'login' %}">Login</a></li>
+            <li><a href="{% url 'register' %}">Register</a></li>
+            {% else %}
+            <li><a href="{% url 'profile' %}">Profile</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <main>
+        <section id="pizza-variety">
+            <h2>Available Pizzas</h2>
+            <div class="pizza-list">
+                {% for pizza in pizzas %}
+                <div class="pizza-item">
+                    <img src="http://{{ request.get_host }}/{{ pizza.image }}" width="200px" height="200px" alt="pizza_image">
+                    <h3>{{ pizza.name }}</h3>
+                    <p>Description: {{ pizza.description }}</p>
+                    <p>Price: Rs.{{ pizza.price }}</p>
+                    <form action="{% url 'buy_pizza' %}" method="post">
+                        {% csrf_token %}
+                        <input id="pizza-id" type="number" name="pizza_id" style="visibility: hidden;" value="{{ pizza.id }}">
+                        <input type="submit" value="Buy" id="submit-btn">
+                    </form>
+                    
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        <section id="custom-pizza">
+            <h2>Create Your Custom Pizza</h2>
+            <form id="custom-pizza-form">
+                <label for="base-type">Choose a base:</label>
+                <select id="base-type">
+                    {% for base in bases %}
+                    <option value="{{ base.id }}">{{ base.name }}</option>
+                    {% endfor %}
+                </select>
+                <label for="cheese-type"><br>Choose a cheese:</label>
+                <select id="cheese-type">
+                    {% for cheese in cheeses %}
+                    <option value="{{ cheese.id }}">{{ cheese.name }}</option>
+                    {% endfor %}
+                </select>
+                <fieldset>
+                    <legend>Choose your veggies :</legend>
+                    {% for veggie in veggies %}
+                    <label><input type="checkbox" name="veggie" value="{{ veggie.id }}"> {{ veggie.name }}</label>
+                    {% endfor %}
+                </fieldset>
+                <fieldset>
+                    <legend>Choose your sauces:</legend>
+                    {% for sauce in sauces %}
+                    <label><input type="checkbox" name="sauce" value="{{ sauce.id }}"> {{ sauce.name }}</label>
+                    {% endfor %}
+                </fieldset>
+                <button type="button" onclick="createCustomPizza();">Create Pizza</button>
+            </form>
+            <div id="custom-pizza-result">
+                
+            </div>
+        </section>
+    </main>
+    <script>
+        let customPizzaBase = undefined;
+        let customPizzaCheese = undefined;
+        let customPizzaVeggies = undefined;
+        let customPizzaSauces = undefined;
+        let buy_pizza_url = "{% url 'buy_pizza' %}";
+
+        function createCustomPizza() {
+            const baseTypeSelect = document.getElementById('base-type');
+            const baseType = baseTypeSelect.options[baseTypeSelect.selectedIndex].text;
+            customPizzaBase = baseTypeSelect.options[baseTypeSelect.selectedIndex].value;
+            
+            const cheeseTypeSelect = document.getElementById('cheese-type');
+            const cheeseType = baseTypeSelect.options[baseTypeSelect.selectedIndex].text;
+            customPizzaCheese = baseTypeSelect.options[baseTypeSelect.selectedIndex].value;
+
+            const veggieElements = document.querySelectorAll('input[name="veggie"]:checked');
+            const veggies = Array.from(veggieElements).map(el => el.parentElement.innerText);
+            customPizzaVeggies = Array.from(veggieElements).map(el => el.value);
+            
+            const sauceElements = document.querySelectorAll('input[name="sauce"]:checked');
+            const sauces = Array.from(sauceElements).map(el => el.parentElement.innerText);
+            customPizzaSauces = Array.from(sauceElements).map(el => el.value);
+            
+
+            let result = `<h3>Your Custom Pizza</h3>`;
+            result += `<p>Base: ${baseType}</p>`;
+            result += `<p>Cheese: ${cheeseType}</p>`;
+            result += `<p>Veggies: ${veggies.join(', ') || 'None'}</p>`;
+            result += `<p>Sauces: ${sauces.join(', ') || 'None'}</p>`;
+            result +=`<div>
+                    <input type="text" name="pizza-name" placeholder="Name Your Pizza" id="pizza-name">
+                    <input type="submit" value="Verify Your Custom pizza" id="custom-pizza-submit" onclick="verifyPizza();">
+                </div>`;
+
+            document.getElementById('custom-pizza-result').innerHTML = result;
+        }
+
+        function verifyPizza(){
+            let pizza_name = document.getElementById("pizza-name").value;
+            let csrf = document.cookie.split("=")[1];
+            
+            let x = fetch('', {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrf,
+                },
+                body: JSON.stringify({
+                    "pizza_name": pizza_name,
+                    "pizza_base": customPizzaBase,
+                    "pizza_cheese": customPizzaCheese,
+                    "pizza_veggies": customPizzaVeggies,
+                    "pizza_sauces": customPizzaSauces,
+                }),
+            });
+            let data = x.then(r => r.json()).then(u => { return u; });
+            const returnData = async () => {
+                let d = await data;
+                alert(d.message);
+                if(d.order) {
+                    document.getElementById('custom-pizza-result').innerHTML += `<form action="${buy_pizza_url}" method="post">
+                                                                                    {% csrf_token %}
+                                                                                    <input id="pizza-id" type="number" name="pizza_id" style="visibility: hidden;" value="${d.pizza_id}">
+                                                                                    <input type="submit" value="Buy" id="custom-submit-btn">
+                                                                                </form>`;
+                }
+                else console.log("not created");
+            }
+            returnData();
+        }
+
+        function buy(){
+            let pizza_id = document.getElementById("pizza-id").value;
+
+        }
+
+    </script>
+</body>
+
+</html>

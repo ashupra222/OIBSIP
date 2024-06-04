@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy page</title>
+    <style>
+        .collapsible {
+            background-color: #f8f4f4;
+            color: black;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            border-radius: 20px;
+            border-bottom-left-radius: 0px;
+            border-bottom-right-radius: 0px;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .active,
+        .collapsible:hover {
+            background-color: #555;
+            color: white;
+        }
+
+        .content {
+            padding: 0 18px;
+            border: 3px solid #555;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            max-height: 0;
+            overflow: hidden;
+            background-color: #f1f1f1;
+            transition: max-height .2s ease-out;
+        }
+
+        table {
+            margin: 1px;
+            padding: 1px;
+            font-size: 16px;
+            height: 1px;
+            width: 50%;
+        }
+
+        .editable {
+            border-radius: 2px;
+            background-color: rgb(241, 239, 239);
+        }
+
+        input[type="button"] {
+            width: 200px;
+            height: 50px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            background-color: #24a0ed;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color .5s;
+        }
+
+        input[type="button"]:hover {
+            background-color: #0086d0;
+        }
+
+        #update_address_btn::after {
+            background-color: grey;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        #pincode {
+            border: none;
+            background-color: inherit;
+            width: 99%;
+            height: 100%;
+        }
+
+        .pizza-item {
+            display: flex;
+            margin: 10px;
+            border: 2px solid black;
+            border-radius: 5px;
+            height: fit-content;
+        }
+
+        .pizza-item-image {
+            flex: 30% 2 0;
+            margin: 10px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align: center;">Pizza Buy</h1>
+    <button type="button" class="collapsible">Confirm Address</button>
+    <div class="content">
+        <table>
+            <tbody>
+                <tr>
+                    <td style="width: 50%; align-items: left;">Address Line 1</td>
+                    <td style="width: 5%;">:</td>
+                    <td class="editable" id="add_l1">{{ customer.address_line1 }}</td>
+                </tr>
+                <tr>
+                    <td>Address Line 2</td>
+                    <td>:</td>
+                    <td class="editable" id="add_l2">{{ customer.address_line2 }}</td>
+                </tr>
+                <tr>
+                    <td>Pincode</td>
+                    <td>:</td>
+                    <td ><input class="editable" type="number"
+                        value="{{ customer.pincode }}" id="pincode" disabled oninput="if(this.value>999999){this.value = this.value.slice(0, 6);}
+                            else if(this.value<0){this.value='0';}">
+                    </td>
+                </tr>
+                <tr>
+                    <td>City</td>
+                    <td>:</td>
+                    <td class="editable" id="city">{{ customer.city }}</td>
+                </tr>
+                <tr>
+                    <td>State</td>
+                    <td>:</td>
+                    <td class="editable" id="state">{{ customer.state }}</td>
+                </tr>
+                <tr>
+                    <td>Country</td>
+                    <td>:</td>
+                    <td class="editable" id="country">{{ customer.country }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <input id="address_change_btn" type="button" value="Change Address" onclick=makeEditable();>
+        <input style="visibility: hidden;" id="update_address_btn" type="button" value="Update Address" onclick=updateAddress();>
+    </div>
+    <button type="button" class="collapsible">Order Summary</button>
+    <div class="content">
+        <div class="pizza-item">
+            <div class="pizza-item-image">
+                <img src="http://{{ request.get_host }}/{{ pizza.image }}" style="border-radius: 5px;" width="200px"
+                    height="200px" alt="pizza image">
+            </div>
+            <div class="pizza-item-details" style="flex: 70%; display: flex; flex-wrap: wrap;">
+                <div class="pizz-item-name" style="flex: 45%;">
+                    <h2>{{ pizza.name }}</h2>
+                    <table>
+                        <tbody>
+                            <tr style="height: fit-content;">
+                                <td>
+                                    <h3>Quantity</h3>
+                                </td>
+                                <td>:</td>
+                                <td><input id="quantity" type="number" value="1" style="width: 100%;" 
+                                    onkeyup="totalPrice();" onchange="if(this.value>20){this.value = '20';}
+                                    else if(this.value<1){this.value='1';}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pizza-item-detail" style="flex: 55%;">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <h3>Base</h3>
+                                </td>
+                                <td>:</td>
+                                <td>{{ pizza.pizza_base }}</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <h3>Sauce</h3>
+                                </td>
+                                <td>:</td>
+                                <td class="trip_2_char">{% for sauce in pizza_sauces %}, {{ sauce.name }}{% endfor %}a</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <h3>veggies</h3>
+                                </td>
+                                <td>:</td>
+                                <td class="trip_2_char">{% for veggie in pizza_veggies %}, {{ veggie.name }}{% endfor %}</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <h3>Cheese</h3>
+                                </td>
+                                <td>:</td>
+                                <td>{{ pizza.pizza_cheese }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="pizza-item">
+            <h3 style="margin-left: 20px;">Total Price: </h3>
+            <p style="font-size: large; flex: 10% 1 1; margin-left: 10px;" id="total-price"></p>
+            <input style="flex: 10% 0 1; margin-right: 10px;" type="button" value="Payment" onclick="sendPayementRequest();">
+        </div>
+    </div>
+    <p id="pizza-price" style="visibility: hidden;">{{ pizza.price }}</p>
+    <p id="pizza-id" style="visibility: hidden;">{{ pizza.id }}</p>
+</body>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    let coll = document.getElementsByClassName("collapsible");
+    let i;
+
+    for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function () {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        });
+
+        coll[0].classList.toggle("active", true);
+        coll[0].nextElementSibling.style.maxHeight = "100%";
+    }
+    let flag = false;
+    function makeEditable() {
+        let btn = document.getElementById("address_change_btn");
+        if (flag) {
+            btn.style.backgroundColor = "#24a0ed";
+            flag = false;
+        }
+        else {
+            btn.style.backgroundColor = "#c1c7cb";
+            flag = true;
+        }
+        updateBtnVisibility();
+
+        let elements = document.getElementsByClassName("editable");
+        let pincode_input = document.getElementById("pincode");
+        for (let i = 0; i < elements.length; i++) {
+            if (!flag) {
+                elements[i].contentEditable = "false";
+                pincode_input.disabled = true;
+                elements[i].style.backgroundColor = "rgb(241, 239, 239)";
+            }
+            else {
+                elements[i].contentEditable = "true";
+                pincode_input.disabled = false;
+                elements[i].style.backgroundColor = "lightgrey";
+            }
+        }
+    }
+
+    function updateAddress() {
+        let csrf = document.cookie.split("=")[1];
+        let add_l1 = document.getElementById("add_l1").innerText;
+        let add_l2 = document.getElementById("add_l2").innerText;
+        let pin = document.getElementById("pincode").value;
+        let city = document.getElementById("city").innerText;
+        let state = document.getElementById("state").innerText;
+        let country = document.getElementById("country").innerText;
+
+        let x = fetch("{% url 'update_profile' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrf,
+            },
+            body: JSON.stringify({
+                "add_l1": add_l1,
+                "add_l2": add_l2,
+                "pincode": pin,
+                "city": city,
+                "state": state,
+                "country": country,
+            }),
+        });
+        let data = x.then(r => r.json()).then(u => { return u; });
+        const returnData = async () => {
+            let d = await data;
+            alert(d);
+            makeEditable();
+        }
+        returnData();
+    }
+
+    function totalPrice(){
+        let quantity = document.getElementById("quantity").value;
+        let total_price_element = document.getElementById("total-price");
+        let price = document.getElementById("pizza-price").innerHTML;
+
+        total_price_element.innerText = price * quantity;
+
+    }
+    totalPrice();
+
+    function sendPayementRequest(){
+        let csrf = document.cookie.split("=")[1];
+        let pizza_id = document.getElementById("pizza-id").innerHTML;
+        let quantity = document.getElementById("quantity").value;
+        
+        let x = fetch('payment-initiator/', {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrf,
+            },
+            body: JSON.stringify({
+                "pizza_id": pizza_id,
+                "quantity": quantity,
+            }),
+        });
+        let data =  x.then(r => r.json()).then(u => {return u;});
+        const returnData = async () => {
+            let d = await data;
+            let options = {
+                key : d.razorpay_merchant_key,
+                amount: d.razorpay_amount,
+                currency : d.currency,
+                name : "Pizza Delivery",
+                order_id : d.razorpay_order_id,
+                callback_url : d.callback_url,
+                prefill: {
+                    contact: "9999999999",
+                    method: "netbanking",
+                },
+            };
+            console.log(options);
+            let rzrp1 = new Razorpay(options);
+            rzrp1.on('payment.failed', function (response){
+            alert(response.error.code);
+            alert(response.error.description);
+            alert(response.error.source);
+            alert(response.error.step);
+            alert(response.error.reason);
+            alert(response.error.metadata.order_id);
+            alert(response.error.metadata.payment_id);
+            });
+
+            rzrp1.open();
+        }
+        returnData();
+    }
+    
+    let elems = document.getElementsByClassName("trip_2_char");
+    for(let i=0; i<elems.length; i++){
+        elems[i].innerHTML = String(elems[i].innerHTML).substring(2);
+    }
+    function updateBtnVisibility() {
+        let hidden = document.getElementById('update_address_btn').style.visibility;
+        if(hidden === 'visible') {
+            document.getElementById('update_address_btn').style.visibility = 'hidden';
+        } else {
+            document.getElementById('update_address_btn').style.visibility = 'visible';
+        }
+    }
+
+</script>
+
+</html>

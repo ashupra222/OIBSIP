@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Change Password Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        #text{
+            color: rgb(68, 56, 129);
+            line-height: 2;
+            transition: font-size .3s;
+        }
+        #text:hover{
+            color: blue;
+            font-size: large;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Change Password</h2>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <input type="password" name="password1" placeholder="Password" id="p1" onkeyup="passCheck();">
+            <input type="password" name="password2" placeholder="Confirm Password" id="p2" onkeyup="passCheck();">
+            <input type="submit" id="subBtn" value="Change Password">
+            <a href="{% url 'register' %}" id="text">Not Registered?</a>
+        </form>
+    </div>
+</body>
+<script>
+    let subBtn = document.getElementById("subBtn");
+    passCheck();
+    function passCheck(){
+        let p1 = document.getElementById("p1").value;
+        let p2 = document.getElementById("p2").value;
+        if((p1 == p2) && p1){
+            subBtn.disabled = false;
+            subBtn.style.backgroundColor = "#4CAF50";
+        }
+        else{
+            subBtn.disabled = true;
+            subBtn.style.backgroundColor = "grey";
+        }
+    }
+</script>
+</html>

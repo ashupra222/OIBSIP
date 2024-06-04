@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        
+        input[type="text"],
+        input[type="password"],
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        input[type="number"] {
+            padding: 6px;
+            width: 45%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+        
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: grey;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #otpdiv{
+            margin-bottom: 10px;
+        }
+
+        #sendotp {
+            color: grey; 
+            cursor: pointer;
+            display: inline;
+            margin-left: 35%;
+        }
+        
+        #text{
+            color: rgb(68, 56, 129);
+            line-height: 2;
+            transition: font-size .3s;
+        }
+        #text:hover{
+            color: blue;
+            font-size: large;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Register</h2>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="Username" id="username">
+            <input type="email" name="email" placeholder="Email" id="email" onkeyup=validateEmail();>
+            <div id="otpdiv">
+                <input type="number" name="otp" placeholder="Enter OTP" id="otp" oninput="if(this.value>999999){this.value = this.value.slice(0, 6);}else if(this.value<0){this.value='0';}passCheck();">
+                <p id="sendotp" onclick=sendOTP();><u>send otp</u></p>
+            </div>
+            <input type="password" name="password1" placeholder="Password" id="p1" onkeyup=passCheck();>
+            <input type="password" name="password2" placeholder="Confirm Password" id="p2" onkeyup=passCheck();>
+            <input type="submit" value="Register" id="submit-btn">
+            <a href="{% url 'login' %}" id="text">Already Registered</a>
+        </form>
+    </div>
+    {% if messages %}
+            {% for message in messages %}
+                {% if message.tags %} <p id="message_tag" style="display: none;">{{ message.tags }}</p>{% endif %}
+                <p id="message" style="display: none;">{{ message }}</p>
+                <script>
+                    if(document.getElementById("message_tag").innerText == "registration_failed info"){
+                        alert(document.getElementById("message").innerText);
+                    }
+                </script>
+            {% endfor %}
+    {% endif %}
+</body>
+<script>
+    let subBtn = document.getElementById("submit-btn");
+    validateEmail();
+
+    function passCheck(){
+        let p1 = document.getElementById("p1").value;
+        let p2 = document.getElementById("p2").value;
+        let otp = document.getElementById("otp").value;
+        if(!p1 || !p2 || !otp){
+            subBtn.disabled = true;
+            subBtn.style.backgroundColor = "grey";
+        }
+        else if (p1 == p2){
+            subBtn.disabled = false;
+            subBtn.style.backgroundColor = "#4CAF50";
+        }
+        else{
+            subBtn.disabled = true;
+            subBtn.style.backgroundColor = "grey";
+        }
+    }
+    function sendOTP(){
+        let csrf = document.cookie.split("=")[1];
+        let email = document.getElementById("email").value;
+        let username = document.getElementById("username").value;
+        let sendOtpText = document.getElementById("sendotp");
+        sendOtpText.innerHTML = "<u>sending...</u>";
+
+        let x = fetch('otp-gen/', {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrf,
+            },
+            body: JSON.stringify({
+                "email": email,
+                "username": username,
+            }),
+        });
+        let data =  x.then(r => r.json()).then(u => {return u;});
+        const returnData = async () => {
+            let d = await data;
+            alert(d);
+            sendOtpText.innerHTML = "<u>Resend</u>";
+        }
+        returnData();
+    }
+    function validateEmail(){
+        let email = document.getElementById("email").value;
+        let correct = String(email)
+                    .toLowerCase()
+                    .match(
+                        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+                    );
+        let sendText = document.getElementById("sendotp");
+        if(!correct){
+            sendText.style.color = "grey";
+            sendText.style.pointerEvents = "none";
+        }
+        else{
+            sendText.style.color = "blue";
+            sendText.style.pointerEvents = "all";
+        }
+}
+</script>
+</html>

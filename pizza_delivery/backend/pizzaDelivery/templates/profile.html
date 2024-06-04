@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1em;
+            text-align: center;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            background-color: #444;
+            color: white;
+            padding: 0.5em;
+            text-align: center;
+        }
+
+        nav ul {
+            flex: 10% 1 1 1;
+            flex-wrap: wrap;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 1em;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            display: block;
+            margin: 20px;
+            padding: 5px;
+            border: 2px solid grey;
+            border-radius: 20px;
+            background-color: #fff;
+        }
+
+        table {
+            display: inline;
+            margin: 1px;
+            padding: 1px;
+            font-size: 16px;
+            height: 1px;
+            width: 50%;
+        }
+        .editable {
+            border-radius: 2px;
+            background-color: rgb(241, 239, 239);
+        }
+
+        input[type="button"] {
+            width: 200px;
+            height: 50px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            background-color: #24a0ed;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color .5s;
+        }
+
+        input[type="button"]:hover {
+            background-color: #0086d0;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .pizza-item {
+            display: flex;
+            margin: 10px;
+            border: 2px solid black;
+            border-radius: 5px;
+            height: fit-content;
+        }
+
+        .pizza-item-image {
+            flex: 30% 2 0;
+            margin: 10px;
+        }
+
+        #pincode {
+            border: none;
+            background-color: rgb(241, 239, 239);
+            width: 99%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Your Profile</h1>
+    </header>
+    <nav>
+        <div style="flex: 1 1 1px; flex-wrap: wrap;"></div>
+        <ul>
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            {% if user.is_anonymous %}
+            <li><a href="{% url 'login' %}">Login</a></li>
+            <li><a href="{% url 'register' %}">Register</a></li>
+            {% else %}
+            <li><a href="{% url 'profile' %}">Profile</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+            {% endif %}
+        </ul>
+        <div style="flex: 1 1 1px; flex-wrap: wrap; text-align: right;"><p>Username: {{ request.user.username }}</p></div>
+    </nav>
+    <main>
+        <div class="container">
+            <h1>Your Details</h1>
+            <table>
+                <tbody>
+                    <tr>
+                        <td style="width: 50%; align-items: left;">First Name</td>
+                        <td style="width: 5%;">:</td>
+                        <td class="editable" id="first_name">{{ request.user.first_name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Last Name</td>
+                        <td>:</td>
+                        <td class="editable" id="last_name">{{ request.user.last_name }}</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 50%; align-items: left;">Address Line 1</td>
+                        <td style="width: 5%;">:</td>
+                        <td class="editable" id="add_l1">{{ customer.address_line1 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Address Line 2</td>
+                        <td>:</td>
+                        <td class="editable" id="add_l2">{{ customer.address_line2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Pincode</td>
+                        <td>:</td>
+                        <td ><input class="editable" type="number"
+                                value="{{ customer.pincode }}" id="pincode" disabled oninput="if(this.value>999999){this.value = this.value.slice(0, 6);}
+                                    else if(this.value<0){this.value='0';}">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>City</td>
+                        <td>:</td>
+                        <td class="editable" id="city">{{ customer.city }}</td>
+                    </tr>
+                    <tr>
+                        <td>State</td>
+                        <td>:</td>
+                        <td class="editable" id="state">{{ customer.state }}</td>
+                    </tr>
+                    <tr>
+                        <td>Country</td>
+                        <td>:</td>
+                        <td class="editable" id="country">{{ customer.country }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="display: block; margin: 10px;">
+                <input id="edit_profile_btn" type="button" value="Edit Details" onclick=makeEditable();>
+                <input style="visibility: hidden;" id="update_profile_btn" type="button" value="Update Profile" onclick=updateProfile();>
+            </div>
+        </div>
+        <div class="container">
+            <h1>Your Orders</h1>
+            {% for order in orders %}
+            {% for orderitem in order.orderitems.all %}
+            <div class="pizza-item">
+                <div class="pizza-item-image">
+                    <img src="http://{{ request.get_host }}/{{ orderitem.pizza.image }}" style="border-radius: 5px;" width="100%"
+                        height="100%" alt="pizza image">
+                </div>
+                <div class="pizza-item-details" style="flex: 70%; display: flex; flex-wrap: wrap;">
+                    <div class="pizz-item-name" style="flex: 45%;">
+                        
+                        <h2>{{ orderitem.pizza.name }}</h2>
+                        <table>
+                            <tbody>
+                                <tr style="height: fit-content;">
+                                    <td><h3>Quantity</h3></td>
+                                    <td>:</td>
+                                    <td>{{ orderitem.quantity }}</td>
+                                </tr>
+                                <tr style="height: fit-content;">
+                                    <td><h3>Payment</h3></td>
+                                    <td>:</td>
+                                    <td>{{ order.payment_status }}</td>
+                                </tr>
+                                <tr style="height: fit-content;">
+                                    <td><h3>Order Status</h3></td>
+                                    <td>:</td>
+                                    <td>{{ order.get_order_status_display }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pizza-item-detail" style="flex: 55%;">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td><h3>Base</h3></td>
+                                    <td>:</td>
+                                    <td>{{ orderitem.pizza.pizza_base }}</td>
+                                </tr>
+                                <tr>
+                                    <td><h3>Sauce</h3></td>
+                                    <td>:</td>
+                                    <td class="trip_2_char">{% for sauce in orderitem.pizza.pizza_sauce.all %}, {{ sauce.name }}{% endfor %}a</td>
+                                </tr>
+                                <tr>
+                                    <td><h3>veggies</h3></td>
+                                    <td>:</td>
+                                    <td class="trip_2_char">{% for veggie in orderitem.pizza.pizza_veggie.all %}, {{ veggie.name }}{% endfor %}</td>
+                                </tr>
+                                <tr>
+                                    <td><h3>Cheese</h3></td>
+                                    <td>:</td>
+                                    <td>{{ orderitem.pizza.pizza_cheese }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </main>
+</body>
+<script>
+    let flag = false;
+    function makeEditable() {
+        let btn = document.getElementById("edit_profile_btn");
+        if (flag) {
+            btn.style.backgroundColor = "#24a0ed";
+            flag = false;
+        }
+        else {
+            btn.style.backgroundColor = "#c1c7cb";
+            flag = true;
+        }
+        updateBtnVisibility();
+
+        let elements = document.getElementsByClassName("editable");
+        let pincode_input = document.getElementById("pincode");
+        for (let i = 0; i < elements.length; i++) {
+            if (!flag) {
+                elements[i].contentEditable = "false";
+                pincode_input.disabled = true;
+                elements[i].style.backgroundColor = "rgb(241, 239, 239)";
+            }
+            else {
+                elements[i].contentEditable = "true";
+                pincode_input.disabled = false;
+                elements[i].style.backgroundColor = "lightgrey";
+            }
+        }
+    }
+    
+    function updateProfile() {
+        let csrf = document.cookie.split("=")[1];
+        let first_name = document.getElementById("first_name").innerText;
+        let last_name = document.getElementById("last_name").innerText;
+        let add_l1 = document.getElementById("add_l1").innerText;
+        let add_l2 = document.getElementById("add_l2").innerText;
+        let pin = document.getElementById("pincode").value;
+        let city = document.getElementById("city").innerText;
+        let state = document.getElementById("state").innerText;
+        let country = document.getElementById("country").innerText;
+
+        let update_btn = document.getElementById("update_profile_btn");
+        update_btn.value = "Updating";
+
+        let x = fetch('update-profile/', {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrf,
+            },
+            body: JSON.stringify({
+                "first_name": first_name,
+                "last_name": last_name,
+                "add_l1": add_l1,
+                "add_l2": add_l2,
+                "pincode": pin,
+                "city": city,
+                "state": state,
+                "country": country,
+            }),
+        });
+        let data = x.then(r => r.json()).then(u => { return u; });
+        const returnData = async () => {
+            let d = await data;
+            alert(d);
+            update_btn.value = "Update Profile";
+            makeEditable();
+        }
+        returnData();
+    }
+
+    let elems = document.getElementsByClassName("trip_2_char");
+    for(let i=0; i<elems.length; i++){
+        elems[i].innerHTML = String(elems[i].innerHTML).substring(2);
+    }
+
+    function updateBtnVisibility() {
+        let hidden = document.getElementById('update_profile_btn').style.visibility;
+        if(hidden === 'visible') {
+            document.getElementById('update_profile_btn').style.visibility = 'hidden';
+        } else {
+            document.getElementById('update_profile_btn').style.visibility = 'visible';
+        }
+    }
+
+</script>
+
+</html>
