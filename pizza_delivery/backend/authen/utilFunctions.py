@@ -9,7 +9,7 @@ def sendMail(email, otp):
         msg = EmailMessage()
         msg.set_content(f"Your otp for the verification is: {otp}")
         msg['Subject'] = "Pizza Delivery Email verification"
-        msg['From'] = "ashupra222@gmail.com"
+        msg['From'] = settings.FROM_EMAIL
         msg['To'] = email
 
         server = SMTP('smtp.gmail.com', 587)

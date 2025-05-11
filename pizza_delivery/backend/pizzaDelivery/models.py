@@ -61,7 +61,8 @@ class Customer(models.Model):
 
 class Order(models.Model):
     ORDER_STATUS_CHOICES = [
-        ("C", "Cooking"),
+        ("R", "Order Recieved"),
+        ("I", "In the Kithen"),
         ("O", "Out for Delivery"),
         ("D", "Delevered")
     ]

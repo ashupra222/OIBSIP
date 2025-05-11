@@ -126,6 +126,7 @@ def paymentHandler(request):
 
                     razorpay_client.payment.capture(payment_id, amount)
                     order_obj.payment_status = "successfull"
+                    order_obj.order_status = "R"
                     order_obj.save()
                     try:
                         order_items = order_obj.orderitems.all()
@@ -146,7 +147,7 @@ def paymentHandler(request):
                     except BaseException as e:
                         print(e)
 
-                    return render(request, 'message.html', {"heading": "Payment Successfull", "message": "your payment is successfull.", "button":"View Order"})
+                    return render(request, 'message1.html', {"heading": "Payment Successfull", "message": "your payment is successfull.", "button":"View Order"})
                 except:
                     order_obj.delete()
                     return render(request, 'message.html', {"heading": "Payment Failed", "message": "your payment is unsuccessfull.", "button":"View Order"})
@@ -203,5 +204,3 @@ def updateProfile(request):
             return JsonResponse("Profile updation failed. May be due to an empty field.", safe=False)
 
     return HttpResponseBadRequest()
-
-
